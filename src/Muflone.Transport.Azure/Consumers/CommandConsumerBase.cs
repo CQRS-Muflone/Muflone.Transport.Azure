@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Muflone.Messages.Commands;
 using Muflone.Transport.Azure.Abstracts;
+using Muflone.Transport.Azure.Factories;
 using Muflone.Transport.Azure.Models;
 using System.Globalization;
-using Muflone.Transport.Azure.Factories;
 
 namespace Muflone.Transport.Azure.Consumers;
 
