@@ -33,11 +33,14 @@ public class ServiceBus : IServiceBus, IEventBus
 	private async Task SendAsyncCore<T>(T command, CancellationToken cancellationToken = default) where T : class, ICommand
 	{
 		var sender = _senderFactory.Create(command);
-		_logger.LogInformation($"Send command '{command.MessageId}' to {sender.FullyQualifiedNamespace}/{sender.EntityPath}");
+		_logger.LogInformation(
+			"Send command \'{CommandMessageId}\' to {SenderFullyQualifiedNamespace}/{SenderEntityPath}",
+			command.MessageId, sender.FullyQualifiedNamespace, sender.EntityPath);
 
 		var serializedMessage = await _messageSerializer.SerializeAsync(command, cancellationToken);
 
-		var correlationPair = command.UserProperties.FirstOrDefault(u => u.Key.Equals(HeadersNames.CorrelationId, StringComparison.InvariantCultureIgnoreCase));
+		var correlationPair = command.UserProperties.FirstOrDefault(u =>
+			u.Key.Equals(HeadersNames.CorrelationId, StringComparison.InvariantCultureIgnoreCase));
 		var correlationId = string.Empty;
 		if (correlationPair.Value != null)
 			correlationId = correlationPair.Value.ToString();
@@ -64,7 +67,8 @@ public class ServiceBus : IServiceBus, IEventBus
 	{
 		var sender = _senderFactory.Create(@event);
 		_logger.LogInformation(
-			$"Publishing event '{@event.MessageId}' to {sender.FullyQualifiedNamespace}/{sender.EntityPath}");
+			"Publishing event \'{EventMessageId}\' to {SenderFullyQualifiedNamespace}/{SenderEntityPath}",
+			@event.MessageId, sender.FullyQualifiedNamespace, sender.EntityPath);
 
 		var serializedMessage = await _messageSerializer.SerializeAsync(@event, cancellationToken);
 

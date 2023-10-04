@@ -10,18 +10,18 @@ public class ServiceBusSenderFactory : IAsyncDisposable, IServiceBusSenderFactor
 	private readonly ServiceBusClient _serviceBusClient;
 	private readonly ConcurrentDictionary<AzureQueueReferences, ServiceBusSender> _senders = new();
 
-	private readonly IEnumerable<AzureServiceBusConfiguration> _configurations;
+	private readonly AzureServiceBusConfiguration _configuration;
 
 	public ServiceBusSenderFactory(ServiceBusClient serviceBusClient,
-		IEnumerable<AzureServiceBusConfiguration> configurations)
+		AzureServiceBusConfiguration configuration)
 	{
 		_serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
-		_configurations = configurations;
+		_configuration = configuration;
 	}
 
 	public ServiceBusSender Create<T>(T message) where T : IMessage
 	{
-		var configuration = _configurations.FirstOrDefault(c => c.TopicName.Equals(message.GetType().Name));
+		var configuration = new AzureServiceBusConfiguration(_configuration.ConnectionString, message.GetType().Name, _configuration.ClientId );
 
 		var references = new AzureQueueReferences(message.GetType().Name, $"{configuration!.ClientId}-subscription",
 			configuration!.ConnectionString);

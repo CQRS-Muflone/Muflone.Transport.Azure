@@ -18,14 +18,8 @@ public class AzureBrokerStarter : IHostedService
 
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
-		var configurations = Enumerable.Empty<AzureServiceBusConfiguration>();
 		foreach (var consumer in _consumers)
 		{
-			configurations = configurations.Concat(new List<AzureServiceBusConfiguration>
-			{
-				new(_azureServiceBusConfiguration.ConnectionString, consumer.TopicName,
-					_azureServiceBusConfiguration.ClientId)
-			});
 			await consumer.StartAsync(cancellationToken);
 		}
 	}

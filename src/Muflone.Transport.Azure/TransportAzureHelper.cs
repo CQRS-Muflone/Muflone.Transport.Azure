@@ -17,6 +17,8 @@ public static class TransportAzureHelper
 		services.AddSingleton<IServiceBusSenderFactory, ServiceBusSenderFactory>();
 		services.AddSingleton<IServiceBus, ServiceBus>();
 		services.AddSingleton<IEventBus, ServiceBus>();
+		
+		services.AddHostedService<AzureBrokerStarter>();
 
 		return services;
 	}
@@ -26,18 +28,6 @@ public static class TransportAzureHelper
 	{
 		services.AddSingleton(messageConsumers);
 		
-		var configurations = Enumerable.Empty<AzureServiceBusConfiguration>();
-		var azureServiceBusConfiguration =
-			services.BuildServiceProvider().GetRequiredService<AzureServiceBusConfiguration>();
-		configurations = messageConsumers.Aggregate(configurations,
-			(current, consumer) => current.Concat(new List<AzureServiceBusConfiguration>
-			{
-				new(azureServiceBusConfiguration.ConnectionString, consumer.TopicName,
-					azureServiceBusConfiguration.ClientId)
-			}));
-		services.AddSingleton(configurations);
-		services.AddHostedService<AzureBrokerStarter>();
-
 		return services;
 	}
 }
