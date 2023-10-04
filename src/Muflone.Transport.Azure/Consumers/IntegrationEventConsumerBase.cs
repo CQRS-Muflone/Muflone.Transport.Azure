@@ -1,10 +1,10 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Muflone.Messages.Events;
-using Muflone.Transport.Azure.Models;
-using System.Globalization;
 using Muflone.Transport.Azure.Abstracts;
 using Muflone.Transport.Azure.Factories;
+using Muflone.Transport.Azure.Models;
+using System.Globalization;
 
 namespace Muflone.Transport.Azure.Consumers;
 
@@ -31,11 +31,13 @@ public abstract class IntegrationEventConsumerBase<T> : IIntegrationEventConsume
 			throw new ArgumentNullException(nameof(azureServiceBusConfiguration.ClientId));
 
 		// Create Topic on Azure ServiceBus if missing
-		ServiceBusAdministrator.CreateTopicIfNotExistAsync(azureServiceBusConfiguration).GetAwaiter().GetResult();
+		ServiceBusAdministrator
+			.CreateTopicIfNotExistAsync(azureServiceBusConfiguration with {TopicName = TopicName})
+			.GetAwaiter().GetResult();
 
 		var serviceBusClient = new ServiceBusClient(azureServiceBusConfiguration.ConnectionString);
 		_processor = serviceBusClient.CreateProcessor(
-			topicName: typeof(T).Name.ToLower(CultureInfo.InvariantCulture),
+			topicName: TopicName.ToLower(CultureInfo.InvariantCulture),
 			subscriptionName: $"{azureServiceBusConfiguration.ClientId}-subscription", new ServiceBusProcessorOptions
 			{
 				AutoCompleteMessages = false,
@@ -65,7 +67,7 @@ public abstract class IntegrationEventConsumerBase<T> : IIntegrationEventConsume
 		catch (Exception ex)
 		{
 			_logger.LogError(ex,
-				$"An error occurred processing domainEvent {typeof(T).Name}. StackTrace: {ex.StackTrace} - Source: {ex.Source} - Message: {ex.Message}");
+				$"An error occurred processing domainEvent {TopicName}. StackTrace: {ex.StackTrace} - Source: {ex.Source} - Message: {ex.Message}");
 			throw;
 		}
 	}

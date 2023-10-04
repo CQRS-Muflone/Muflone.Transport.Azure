@@ -21,12 +21,12 @@ public class AzureBrokerStarter : IHostedService
 		var configurations = Enumerable.Empty<AzureServiceBusConfiguration>();
 		foreach (var consumer in _consumers)
 		{
-			await consumer.StartAsync(cancellationToken);
 			configurations = configurations.Concat(new List<AzureServiceBusConfiguration>
 			{
 				new(_azureServiceBusConfiguration.ConnectionString, consumer.TopicName,
 					_azureServiceBusConfiguration.ClientId)
 			});
+			await consumer.StartAsync(cancellationToken);
 		}
 	}
 

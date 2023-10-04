@@ -35,11 +35,11 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 		_messageSerializer = messageSerializer ?? new Persistence.Serializer();
 
 		// Create Queue on Azure ServiceBus if missing
-		ServiceBusAdministrator.CreateQueueIfNotExistAsync(new AzureQueueReferences(typeof(T).Name, "",
+		ServiceBusAdministrator.CreateQueueIfNotExistAsync(new AzureQueueReferences(TopicName, "",
 			azureServiceBusConfiguration.ConnectionString)).GetAwaiter().GetResult();
 
 		_processor = serviceBusClient.CreateProcessor(
-			topicName: typeof(T).Name.ToLower(CultureInfo.InvariantCulture),
+			topicName: TopicName.ToLower(CultureInfo.InvariantCulture),
 			subscriptionName: "", new ServiceBusProcessorOptions
 			{
 				AutoCompleteMessages = false,
@@ -57,14 +57,16 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 		return ConsumeAsyncCore(message, cancellationToken);
 	}
 
-	private async Task ConsumeAsyncCore<T>(T message, CancellationToken cancellationToken)
+	private Task ConsumeAsyncCore<T>(T message, CancellationToken cancellationToken)
 	{
 		try
 		{
 			if (message == null)
 				throw new ArgumentNullException(nameof(message));
 
-			await HandlerAsync.HandleAsync((dynamic)message, cancellationToken);
+			HandlerAsync.HandleAsync((dynamic)message, cancellationToken);
+
+			return Task.CompletedTask;
 		}
 		catch (Exception ex)
 		{

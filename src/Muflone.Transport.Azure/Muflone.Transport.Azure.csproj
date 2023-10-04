@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <Version>6.1.4</Version>
+	  <Version>6.1.5</Version>
 	  <Authors>Alberto Acerbis - Alessandro Colla</Authors>
 	  <Description>Microsoft Azure Service bus support and wrappers for Muflone's CommandHandlers and EventHandlers</Description>
 	  <PackageProjectUrl>https://github.com/CQRS-Muflone/Muflone.Transport.Azure</PackageProjectUrl>

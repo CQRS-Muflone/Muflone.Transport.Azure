@@ -1,10 +1,10 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Muflone.Messages.Events;
-using Muflone.Transport.Azure.Models;
-using System.Globalization;
 using Muflone.Transport.Azure.Abstracts;
 using Muflone.Transport.Azure.Factories;
+using Muflone.Transport.Azure.Models;
+using System.Globalization;
 
 namespace Muflone.Transport.Azure.Consumers;
 
@@ -31,11 +31,13 @@ public abstract class DomainEventConsumerBase<T> : IDomainEventConsumer<T>, IAsy
 			throw new ArgumentNullException(nameof(azureServiceBusConfiguration.ClientId));
 
 		// Create Topic on Azure ServiceBus if missing
-		ServiceBusAdministrator.CreateTopicIfNotExistAsync(azureServiceBusConfiguration).GetAwaiter().GetResult();
+		ServiceBusAdministrator
+			.CreateTopicIfNotExistAsync(azureServiceBusConfiguration with {TopicName = TopicName})
+			.GetAwaiter().GetResult();
 
 		var serviceBusClient = new ServiceBusClient(azureServiceBusConfiguration.ConnectionString);
 		_processor = serviceBusClient.CreateProcessor(
-			topicName: typeof(T).Name.ToLower(CultureInfo.InvariantCulture),
+			topicName: TopicName.ToLower(CultureInfo.InvariantCulture),
 			subscriptionName: $"{azureServiceBusConfiguration.ClientId}-subscription", new ServiceBusProcessorOptions
 			{
 				AutoCompleteMessages = false,
@@ -65,7 +67,8 @@ public abstract class DomainEventConsumerBase<T> : IDomainEventConsumer<T>, IAsy
 		catch (Exception ex)
 		{
 			_logger.LogError(ex,
-				$"An error occurred processing domainEvent {typeof(T).Name}. StackTrace: {ex.StackTrace} - Source: {ex.Source} - Message: {ex.Message}");
+				"An error occurred processing domainEvent {TopicName}. StackTrace: {ExStackTrace} - Source: {ExSource} - Message: {ExMessage}",
+				TopicName, ex.StackTrace, ex.Source, ex.Message);
 			throw;
 		}
 	}
@@ -74,7 +77,7 @@ public abstract class DomainEventConsumerBase<T> : IDomainEventConsumer<T>, IAsy
 	{
 		try
 		{
-			_logger.LogInformation($"Received message '{args.Message.MessageId}'. Processing...");
+			_logger.LogInformation("Received message \'{MessageMessageId}\'. Processing...", args.Message.MessageId);
 
 			var message = await _messageSerializer.DeserializeAsync<T>(args.Message.Body.ToString());
 
@@ -84,7 +87,8 @@ public abstract class DomainEventConsumerBase<T> : IDomainEventConsumer<T>, IAsy
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, $"an error has occurred while processing message '{args.Message.MessageId}': {ex.Message}");
+			_logger.LogError(ex, "an error has occurred while processing message \'{MessageMessageId}\': {ExMessage}",
+				args.Message.MessageId, ex.Message);
 			if (args.Message.DeliveryCount > 3)
 				await args.DeadLetterMessageAsync(args.Message).ConfigureAwait(false);
 			else
@@ -95,7 +99,8 @@ public abstract class DomainEventConsumerBase<T> : IDomainEventConsumer<T>, IAsy
 	private Task ProcessErrorAsync(ProcessErrorEventArgs arg)
 	{
 		_logger.LogError(arg.Exception,
-			$"An exception has occurred while processing message '{arg.FullyQualifiedNamespace}'");
+			"An exception has occurred while processing message \'{ArgFullyQualifiedNamespace}\'",
+			arg.FullyQualifiedNamespace);
 		return Task.CompletedTask;
 	}
 
