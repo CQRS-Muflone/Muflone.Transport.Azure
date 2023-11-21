@@ -1,19 +1,15 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Muflone.Transport.Azure.Abstracts;
-using Muflone.Transport.Azure.Models;
 
 namespace Muflone.Transport.Azure;
 
 public class AzureBrokerStarter : IHostedService
 {
 	private readonly IEnumerable<IConsumer> _consumers;
-	private readonly AzureServiceBusConfiguration _azureServiceBusConfiguration;
 
-	public AzureBrokerStarter(IEnumerable<IConsumer> consumers,
-		AzureServiceBusConfiguration azureServiceBusConfiguration)
+	public AzureBrokerStarter(IEnumerable<IConsumer> consumers)
 	{
 		_consumers = consumers;
-		_azureServiceBusConfiguration = azureServiceBusConfiguration;
 	}
 
 	public async Task StartAsync(CancellationToken cancellationToken)

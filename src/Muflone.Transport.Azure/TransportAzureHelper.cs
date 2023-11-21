@@ -12,6 +12,12 @@ public static class TransportAzureHelper
 	public static IServiceCollection AddMufloneTransportAzure(this IServiceCollection services,
 		AzureServiceBusConfiguration azureServiceBusConfiguration)
 	{
+		var serviceProvider = services.BuildServiceProvider();
+		var serviceBus = serviceProvider.GetService<IServiceBus>();
+		if (serviceBus != null)
+			return services;
+		
+		services.AddSingleton(Enumerable.Empty<IConsumer>());
 		services.AddSingleton(new ServiceBusClient(azureServiceBusConfiguration.ConnectionString));
 		services.AddSingleton(azureServiceBusConfiguration);
 		services.AddSingleton<IServiceBusSenderFactory, ServiceBusSenderFactory>();
@@ -23,7 +29,7 @@ public static class TransportAzureHelper
 		return services;
 	}
 
-	public static IServiceCollection RegisterConsumersInTransportAzureServiceBus(this IServiceCollection services,
+	public static IServiceCollection AddMufloneAzureConsumers(this IServiceCollection services,
 		IEnumerable<IConsumer> messageConsumers)
 	{
 		services.AddSingleton(messageConsumers);
