@@ -30,6 +30,19 @@ public abstract class CommandSenderBase<T> : ICommandSender<T>, IAsyncDisposable
 				AutoCompleteMessages = false,
 				MaxConcurrentCalls = azureServiceBusConfiguration.MaxConcurrentCalls
 			});
+		_processor.ProcessMessageAsync += AzureMessageHandler;
+		_processor.ProcessErrorAsync += ProcessErrorAsync;
+	}
+
+	private Task AzureMessageHandler(ProcessMessageEventArgs args)
+	{
+		// await args.CompleteMessageAsync(args.Message).ConfigureAwait(false);
+		return Task.CompletedTask;
+	}
+
+	private Task ProcessErrorAsync(ProcessErrorEventArgs arg)
+	{
+		return Task.CompletedTask;
 	}
 
 	public async Task StartAsync(CancellationToken cancellationToken = default) =>
