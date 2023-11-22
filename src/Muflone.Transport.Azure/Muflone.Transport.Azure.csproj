@@ -16,7 +16,7 @@
 	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
 	  <PackageIcon>Logo.png</PackageIcon>
-	  <PackageVersion>6.1.6</PackageVersion>
+	  <PackageVersion>6.1.7</PackageVersion>
   </PropertyGroup>
 
 	<ItemGroup>
