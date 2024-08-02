@@ -8,19 +8,14 @@ using Muflone.Transport.Azure.Factories;
 
 namespace Muflone.Transport.Azure;
 
-public class ServiceBus : IServiceBus, IEventBus
+public class ServiceBus(
+	IServiceBusSenderFactory senderFactory,
+	ILogger<ServiceBus> logger)
+	: IServiceBus, IEventBus
 {
-	private readonly IServiceBusSenderFactory _senderFactory;
-	private readonly ILogger<ServiceBus> _logger;
-	private readonly ISerializer _messageSerializer;
-
-	public ServiceBus(IServiceBusSenderFactory senderFactory,
-		ILogger<ServiceBus> logger)
-	{
-		_senderFactory = senderFactory ?? throw new ArgumentNullException(nameof(senderFactory));
-		_logger = logger ?? throw new ArgumentNullException(nameof(logger));
-		_messageSerializer = new Serializer();
-	}
+	private readonly IServiceBusSenderFactory _senderFactory = senderFactory ?? throw new ArgumentNullException(nameof(senderFactory));
+	private readonly ILogger<ServiceBus> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+	private readonly ISerializer _messageSerializer = new Serializer();
 
 	public Task SendAsync<T>(T command, CancellationToken cancellationToken = default) where T : class, ICommand
 	{

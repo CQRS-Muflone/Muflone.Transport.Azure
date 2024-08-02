@@ -5,26 +5,20 @@ using Muflone.Transport.Azure.Models;
 
 namespace Muflone.Transport.Azure.Factories;
 
-public class ServiceBusSenderFactory : IAsyncDisposable, IServiceBusSenderFactory
+public class ServiceBusSenderFactory(
+	ServiceBusClient serviceBusClient,
+	AzureServiceBusConfiguration configuration)
+	: IAsyncDisposable, IServiceBusSenderFactory
 {
-	private readonly ServiceBusClient _serviceBusClient;
+	private readonly ServiceBusClient _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
 	private readonly ConcurrentDictionary<AzureQueueReferences, ServiceBusSender> _senders = new();
-
-	private readonly AzureServiceBusConfiguration _configuration;
-
-	public ServiceBusSenderFactory(ServiceBusClient serviceBusClient,
-		AzureServiceBusConfiguration configuration)
-	{
-		_serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
-		_configuration = configuration;
-	}
 
 	public ServiceBusSender Create<T>(T message) where T : IMessage
 	{
-		var configuration = new AzureServiceBusConfiguration(_configuration.ConnectionString, message.GetType().Name, _configuration.ClientId );
+		var configuration1 = new AzureServiceBusConfiguration(configuration.ConnectionString, message.GetType().Name, configuration.ClientId );
 
-		var references = new AzureQueueReferences(message.GetType().Name, $"{configuration!.ClientId}-subscription",
-			configuration!.ConnectionString);
+		var references = new AzureQueueReferences(message.GetType().Name, $"{configuration1!.ClientId}-subscription",
+			configuration1!.ConnectionString);
 		var sender = _senders.GetOrAdd(references, _ => _serviceBusClient.CreateSender(references.TopicName));
 
 		if (sender is null || sender.IsClosed)

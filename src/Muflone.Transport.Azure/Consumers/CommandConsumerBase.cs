@@ -9,8 +9,7 @@ using System.Globalization;
 namespace Muflone.Transport.Azure.Consumers;
 
 /// <summary>
-/// TODO: Unify Consumer: ora ci sono Consumer diversi per Command e DomainEvent
-/// TODO: Rimuovere stringhe di connessione e subscriptioname dal codice
+/// TODO: Unify Consumer: now we have different Consumers for Command and DomainEvent
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDisposable where T : class, ICommand

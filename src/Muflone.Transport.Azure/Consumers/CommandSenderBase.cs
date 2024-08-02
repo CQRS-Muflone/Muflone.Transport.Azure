@@ -13,7 +13,7 @@ public abstract class CommandSenderBase<T> : ICommandSender<T>, IAsyncDisposable
 
 	private readonly ServiceBusProcessor _processor;
 
-	public CommandSenderBase(AzureServiceBusConfiguration azureServiceBusConfiguration)
+	protected CommandSenderBase(AzureServiceBusConfiguration azureServiceBusConfiguration)
 	{
 		TopicName = typeof(T).Name;
 

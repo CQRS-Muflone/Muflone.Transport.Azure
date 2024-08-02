@@ -3,18 +3,11 @@ using Muflone.Transport.Azure.Abstracts;
 
 namespace Muflone.Transport.Azure;
 
-public class AzureBrokerStarter : IHostedService
+public class AzureBrokerStarter(IEnumerable<IConsumer> consumers) : IHostedService
 {
-	private readonly IEnumerable<IConsumer> _consumers;
-
-	public AzureBrokerStarter(IEnumerable<IConsumer> consumers)
-	{
-		_consumers = consumers;
-	}
-
 	public async Task StartAsync(CancellationToken cancellationToken)
 	{
-		foreach (var consumer in _consumers)
+		foreach (var consumer in consumers)
 		{
 			await consumer.StartAsync(cancellationToken);
 		}
