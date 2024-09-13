@@ -1,7 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Logging;
 using Muflone.Messages.Commands;
-using Muflone.Transport.Azure.Abstracts;
 using Muflone.Transport.Azure.Factories;
 using Muflone.Transport.Azure.Models;
 using System.Globalization;
@@ -9,12 +8,12 @@ using System.Globalization;
 namespace Muflone.Transport.Azure.Consumers;
 
 /// <summary>
-/// TODO: Unify Consumer: now we have different Consumers for Command and DomainEvent
+/// ConsumerBase
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDisposable where T : class, ICommand
+public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDisposable where T : Command
 {
-	public string TopicName { get; }
+	private string TopicName { get; }
 
 	private readonly ServiceBusProcessor _processor;
 	private readonly Persistence.ISerializer _messageSerializer;
@@ -50,6 +49,8 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 
 	public Task ConsumeAsync(T message, CancellationToken cancellationToken = default)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
+		
 		if (message == null)
 			throw new ArgumentNullException(nameof(message));
 
@@ -58,6 +59,8 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 
 	private Task ConsumeAsyncCore<T>(T message, CancellationToken cancellationToken)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
+		
 		try
 		{
 			if (message == null)
@@ -76,8 +79,13 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 		}
 	}
 
-	public async Task StartAsync(CancellationToken cancellationToken = default) =>
+	public async Task StartAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		
 		await _processor.StartProcessingAsync(cancellationToken).ConfigureAwait(false);
+	}
+		
 
 	public Task StopAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
