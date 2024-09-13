@@ -8,9 +8,9 @@ using System.Globalization;
 
 namespace Muflone.Transport.Azure.Consumers;
 
-public abstract class IntegrationEventConsumerBase<T> : IIntegrationEventConsumer<T>, IAsyncDisposable where T : class, IIntegrationEvent
+public abstract class IntegrationEventConsumerBase<T> : IIntegrationEventConsumer<T>, IAsyncDisposable where T : IntegrationEvent
 {
-	public string TopicName { get; }
+	private string TopicName { get; }
 
 	private readonly ServiceBusProcessor _processor;
 	private readonly Persistence.ISerializer _messageSerializer;
@@ -47,17 +47,28 @@ public abstract class IntegrationEventConsumerBase<T> : IIntegrationEventConsume
 		_processor.ProcessErrorAsync += ProcessErrorAsync;
 	}
 
-	public async Task StartAsync(CancellationToken cancellationToken = default) =>
+	public async Task StartAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		
 		await _processor.StartProcessingAsync(cancellationToken).ConfigureAwait(false);
+	}
+		
 
-	public Task StopAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+	public Task StopAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		
+		return Task.CompletedTask;
+	}
 
 	public async Task ConsumeAsync(T message, CancellationToken cancellationToken = default)
 	{
+		cancellationToken.ThrowIfCancellationRequested();
+		
 		try
 		{
-			if (message == null)
-				throw new ArgumentNullException(nameof(message));
+			ArgumentNullException.ThrowIfNull(message);
 
 			foreach (var handlerAsync in HandlersAsync)
 			{
@@ -80,7 +91,7 @@ public abstract class IntegrationEventConsumerBase<T> : IIntegrationEventConsume
 
 			var message = await _messageSerializer.DeserializeAsync<T>(args.Message.Body.ToString());
 
-			await ConsumeAsync(message, args.CancellationToken);
+			await ConsumeAsync(message!, args.CancellationToken);
 
 			await args.CompleteMessageAsync(args.Message).ConfigureAwait(false);
 		}

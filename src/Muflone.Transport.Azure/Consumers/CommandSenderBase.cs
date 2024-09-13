@@ -7,9 +7,9 @@ using System.Globalization;
 
 namespace Muflone.Transport.Azure.Consumers;
 
-public abstract class CommandSenderBase<T> : ICommandSender<T>, IAsyncDisposable where T : class, ICommand
+public abstract class CommandSenderBase<T> : ICommandSender<T>, IAsyncDisposable where T : Command
 {
-	public string TopicName { get; }
+	private string TopicName { get; }
 
 	private readonly ServiceBusProcessor _processor;
 
@@ -36,7 +36,6 @@ public abstract class CommandSenderBase<T> : ICommandSender<T>, IAsyncDisposable
 
 	private Task AzureMessageHandler(ProcessMessageEventArgs args)
 	{
-		// await args.CompleteMessageAsync(args.Message).ConfigureAwait(false);
 		return Task.CompletedTask;
 	}
 
@@ -45,10 +44,19 @@ public abstract class CommandSenderBase<T> : ICommandSender<T>, IAsyncDisposable
 		return Task.CompletedTask;
 	}
 
-	public async Task StartAsync(CancellationToken cancellationToken = default) =>
+	public async Task StartAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		
 		await _processor.StartProcessingAsync(cancellationToken).ConfigureAwait(false);
-
-	public Task StopAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+	}
+		
+	public Task StopAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		
+		return Task.CompletedTask;
+	}
 
 	#region Dispose
 	public ValueTask DisposeAsync() => ValueTask.CompletedTask;

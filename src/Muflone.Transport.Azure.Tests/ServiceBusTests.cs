@@ -34,7 +34,7 @@ public class ServiceBusTests
 		var serializedCommand = await serializer.SerializeAsync(command);
 		var commandDeserialize = await serializer.DeserializeAsync<AddOrder>(serializedCommand);
 
-		Assert.Equal(command.OrderId, commandDeserialize.OrderId);
+		Assert.Equal(command.OrderId, commandDeserialize!.OrderId);
 	}
 
 	[Fact]
@@ -95,7 +95,7 @@ public class AddOrder : Command
 
 public class OrderId : DomainId
 {
-	public OrderId(Guid value) : base(value)
+	public OrderId(Guid value) : base(value.ToString())
 	{
 	}
 }

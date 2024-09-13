@@ -63,8 +63,7 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 		
 		try
 		{
-			if (message == null)
-				throw new ArgumentNullException(nameof(message));
+			ArgumentNullException.ThrowIfNull(message);
 
 			HandlerAsync.HandleAsync((dynamic)message, cancellationToken);
 
@@ -85,10 +84,13 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 		
 		await _processor.StartProcessingAsync(cancellationToken).ConfigureAwait(false);
 	}
+
+	public Task StopAsync(CancellationToken cancellationToken = default)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
 		
-
-	public Task StopAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-
+		return Task.CompletedTask;
+	}
 
 	private async Task AzureMessageHandler(ProcessMessageEventArgs args)
 	{
@@ -98,7 +100,7 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 
 			var message = await _messageSerializer.DeserializeAsync<T>(args.Message.Body.ToString());
 
-			await ConsumeAsync(message, args.CancellationToken);
+			await ConsumeAsync(message!, args.CancellationToken);
 
 			await args.CompleteMessageAsync(args.Message).ConfigureAwait(false);
 		}
