@@ -4,6 +4,7 @@ using Muflone.Messages.Commands;
 using Muflone.Transport.Azure.Factories;
 using Muflone.Transport.Azure.Models;
 using System.Globalization;
+using System.Text;
 
 namespace Muflone.Transport.Azure.Consumers;
 
@@ -98,7 +99,7 @@ public abstract class CommandConsumerBase<T> : ICommandConsumer<T>, IAsyncDispos
 		{
 			_logger.LogInformation("Received message \'{MessageMessageId}\'. Processing...", args.Message.MessageId);
 
-			var message = await _messageSerializer.DeserializeAsync<T>(args.Message.Body.ToString());
+			var message = await _messageSerializer.DeserializeAsync<T>(Encoding.UTF8.GetString(args.Message.Body.ToArray()));
 
 			await ConsumeAsync(message!, args.CancellationToken);
 

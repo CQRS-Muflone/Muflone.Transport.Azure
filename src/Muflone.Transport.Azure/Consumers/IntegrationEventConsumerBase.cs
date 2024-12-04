@@ -5,6 +5,7 @@ using Muflone.Transport.Azure.Abstracts;
 using Muflone.Transport.Azure.Factories;
 using Muflone.Transport.Azure.Models;
 using System.Globalization;
+using System.Text;
 
 namespace Muflone.Transport.Azure.Consumers;
 
@@ -89,7 +90,7 @@ public abstract class IntegrationEventConsumerBase<T> : IIntegrationEventConsume
 		{
 			_logger.LogInformation($"Received message '{args.Message.MessageId}'. Processing...");
 
-			var message = await _messageSerializer.DeserializeAsync<T>(args.Message.Body.ToString());
+			var message = await _messageSerializer.DeserializeAsync<T>(Encoding.UTF8.GetString(args.Message.Body.ToArray()));
 
 			await ConsumeAsync(message!, args.CancellationToken);
 
