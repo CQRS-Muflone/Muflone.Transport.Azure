@@ -90,7 +90,8 @@ public abstract class IntegrationEventConsumerBase<T> : IIntegrationEventConsume
 		{
 			_logger.LogInformation($"Received message '{args.Message.MessageId}'. Processing...");
 
-			var message = await _messageSerializer.DeserializeAsync<T>(Encoding.UTF8.GetString(args.Message.Body.ToArray()));
+			var message =
+				await _messageSerializer.DeserializeAsync<T>(Encoding.UTF8.GetString(args.Message.Body.ToArray()));
 
 			await ConsumeAsync(message!, args.CancellationToken);
 
